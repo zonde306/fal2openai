@@ -34,12 +34,12 @@ async def chat_completions(request : blacksheep.Request) -> blacksheep.Response:
     model : str = data.get("models", None)
     if model not in defines.MODELS:
         logging.error(f"Invalid model: {model} only {defines.MODELS} are allowed")
-        return blacksheep.Response(400, body="Invalid model")
+        return blacksheep.Response(400, content=f"Invalid model {model} only {defines.MODELS} are allowed")
     
     messages : list = data.get("messages", [])
     if not messages:
         logging.error(f"Invalid messages: {messages}")
-        return blacksheep.Response(400, body="Invalid messages")
+        return blacksheep.Response(400, content="Empty messages")
     
     reasoning : bool = data.get("reasoning", True)
     api_key : str = data.get("api_key", "")
