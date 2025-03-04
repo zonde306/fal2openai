@@ -31,7 +31,7 @@ async def models(request : blacksheep.Request) -> blacksheep.Response:
 @blacksheep.post("/v1/chat/completions")
 async def chat_completions(request : blacksheep.Request) -> blacksheep.Response:
     data : dict = await request.json()
-    model : str = data.get("models", None)
+    model : str = data.get("model", None)
     if model not in defines.MODELS:
         logging.error(f"Invalid model: {model} only {defines.MODELS} are allowed")
         return blacksheep.Response(400, content=f"Invalid model {model} only {defines.MODELS} are allowed")
