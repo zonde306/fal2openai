@@ -14,16 +14,19 @@ app.middlewares.append(middleware.check_authorization)
 
 @blacksheep.get("/v1/models")
 async def models(request : blacksheep.Request) -> blacksheep.Response:
-    return blacksheep.json([
-        {
-            "id": id,
-            "object": "model",
-            "name": model,
-            "created": int(time.time()),
-            "owned_by": "fal",
-        }
-        for id, model in enumerate(defines.MODELS)
-    ])
+    return blacksheep.json({
+        "object": "list",
+        "data": [
+            {
+                "id": model,
+                "object": "model",
+                "name": model,
+                "created": int(time.time()),
+                "owned_by": "fal",
+            }
+            for model in defines.MODELS
+        ],
+    })
 
 @blacksheep.post("/v1/chat/completions")
 async def chat_completions(request : blacksheep.Request) -> blacksheep.Response:
