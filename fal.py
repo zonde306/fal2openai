@@ -20,6 +20,8 @@ def setup():
     
     if not CLIENTS:
         logger.info("No API keys available")
+    else:
+        logger.info(f"Using API keys: {len(CLIENTS)}")
 
 def next_client() -> fal_client.AsyncClient:
     if not CLIENTS:
@@ -69,6 +71,9 @@ async def send_message(messages: list[dict], api_key: str, model : str, reasonin
     prompt, _ = await format_messages(messages, feat.ROLE)
     request_id = f"chatcmpl-{uuid.uuid4()}"
     error_message = ""
+
+    logger.info(f"System Prompt: {feat.SYSTEM_PROMPT}")
+    logger.info(f"User Prompt: {prompt}")
 
     try:
         handler = client.stream(
@@ -121,13 +126,15 @@ async def send_message(messages: list[dict], api_key: str, model : str, reasonin
                     "finish_reason": None,
                 }],
             }
+            print(content, end="")
     except fal_client.client.FalClientError as e:
         error_message = str(e)
+        print("")
         logger.error(f"Error: {e}", exc_info=True)
     except httpx_sse._exceptions.SSEError:
         # 他们库的问题
-        ...
-    
+        print("")
+
     if error_message:
         yield {
             "id" : request_id,
