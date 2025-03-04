@@ -9,4 +9,4 @@ export AUTHORIZATION_TOKEN=
 # 端口号
 export PORT=25100
 
-python3 -m uvicorn server:app --port ${PORT}
+python3 -m uvicorn app:app --port ${PORT}

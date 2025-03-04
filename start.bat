@@ -1,11 +1,11 @@
-﻿
-REM 你的API KEY，多个用半角逗号分隔
+
+REM ���API KEY������ð�Ƕ��ŷָ�
 set API_KEYS=
 
-REM 连接用的密码
+REM �����õ�����
 set AUTHORIZATION_TOKEN=
 
-REM 端口号
+REM �˿ں�
 set PORT=25100
 
-python -m uvicorn server:app --port ${PORT}
+python -m uvicorn app:app --port %PORT%
