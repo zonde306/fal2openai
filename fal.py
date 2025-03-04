@@ -123,7 +123,6 @@ async def send_message(messages: list[dict], api_key: str, model : str, reasonin
                     "delta": {
                         "content": content,
                     },
-                    "finish_reason": None,
                 }],
             }
             print(content, end="")
@@ -160,7 +159,7 @@ async def send_message(messages: list[dict], api_key: str, model : str, reasonin
                 "delta": {
                     "content": "",
                 },
-                "finish_reason": "completed",
+                "finish_reason": "stop",
             }],
         }
 
@@ -199,8 +198,9 @@ async def send_message_sync(messages: list[dict], api_key: str, model : str, rea
                 "role": "assistant",
                 "content": content,
             },
-            "finish_reason": "completed",
+            "finish_reason": "stop",
         }],
+        "usage": None,
     }
 
 setup()
