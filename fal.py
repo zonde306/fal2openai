@@ -67,7 +67,7 @@ async def format_messages(messages: list[dict], role_info : features.RoleInfo) -
     first_message = processed[0]
     first_length = len(first_message)
     processed.pop(0)
-    for prompt in reversed(processed[1:]):
+    for prompt in reversed(processed):
         if not full:
             if len(output2) + len(prompt) < defines.PROMPT_CHARS_LIMIT:
                 output2 = prompt + "\n" + output2
