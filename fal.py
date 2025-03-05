@@ -52,7 +52,7 @@ async def format_messages(messages: list[dict], role_info : features.RoleInfo) -
                     contents.append(cont)
         else:
             contents.append(msg["content"])
-
+        
         for cont in contents:
             if "<|removeRole|>" in cont:
                 cont = cont.replace("<|removeRole|>\n", "").replace("<|removeRole|>", "")
@@ -80,8 +80,8 @@ async def send_message(messages: list[dict], api_key: str, model : str, reasonin
         handler = client.stream(
             "fal-ai/any-llm",
             arguments={
-                "prompt" : "continue",
-                "system_prompt": feat.SYSTEM_PROMPT + "\n\n" + prompt,
+                "prompt" : prompt,
+                "system_prompt": feat.SYSTEM_PROMPT,
                 "reasoning": reasoning,
                 "model": model,
             },
