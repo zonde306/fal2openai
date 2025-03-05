@@ -80,8 +80,8 @@ async def send_message(messages: list[dict], api_key: str, model : str, reasonin
         handler = client.stream(
             "fal-ai/any-llm",
             arguments={
-                "prompt" : prompt,
-                "system_prompt": feat.SYSTEM_PROMPT,
+                "prompt" : "continue",
+                "system_prompt": feat.SYSTEM_PROMPT + "\n\n" + prompt,
                 "reasoning": reasoning,
                 "model": model,
             },
