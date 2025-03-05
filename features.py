@@ -2,6 +2,8 @@ import re
 import dataclasses
 
 FEATURES_DEFINE = {}
+ROLEINFO_PATTERN = re.compile(r"<roleInfo>([\s\S]*)</roleInfo>", re.MULTILINE)
+SYSTEM_PATTERN = re.compile(r"<systemPrompt>([\s\S]*)</systemPrompt>", re.MULTILINE)
 
 @dataclasses.dataclass
 class RoleInfo:
@@ -19,9 +21,7 @@ def extract_role_info(content : str) -> tuple[RoleInfo, str]:
     if not isinstance(content, str):
         return (RoleInfo(), content)
 
-    pattern = re.compile(r"<roleInfo>([\s\S]*)</roleInfo>", re.MULTILINE)
-    
-    if matched := pattern.search(content):
+    if matched := ROLEINFO_PATTERN.search(content):
         roles = {}
         for line in matched.group(1).split("\n"):
             line = line.strip()
@@ -32,7 +32,7 @@ def extract_role_info(content : str) -> tuple[RoleInfo, str]:
         
         return (
             RoleInfo(**roles),
-            re.sub(pattern, "", content)
+            re.sub(ROLEINFO_PATTERN, "", content)
         )
     
     return (RoleInfo(), content)
@@ -49,7 +49,10 @@ def process_features(messages : list) -> Features:
     role, cont = extract_role_info(messages[0]["content"])
 
     system = ""
-    if messages[0]["role"] == "system":
+    if matched := SYSTEM_PATTERN.search(cont):
+        system = matched.group(1).strip()
+        messages[0]["content"] = re.sub(SYSTEM_PATTERN, "", cont)
+    elif messages[0]["role"] == "system":
         system = cont
         messages.pop(0)
     else:
