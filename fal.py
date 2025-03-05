@@ -72,8 +72,9 @@ async def send_message(messages: list[dict], api_key: str, model : str, reasonin
     request_id = f"chatcmpl-{uuid.uuid4()}"
     error_message = ""
 
-    print(f"System Prompt: {feat.SYSTEM_PROMPT}")
-    print(f"User Prompt: {prompt}")
+    print(f"System Prompt: \n{feat.SYSTEM_PROMPT}")
+    print(f"User Prompt: \n{prompt}")
+    print("Response:")
 
     try:
         handler = client.stream(
@@ -133,7 +134,7 @@ async def send_message(messages: list[dict], api_key: str, model : str, reasonin
     except httpx_sse._exceptions.SSEError:
         # 他们库的问题
         print("")
-
+    
     if error_message:
         print(f"ERROR: {error_message}")
         yield {
