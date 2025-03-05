@@ -117,10 +117,10 @@ async def send_message(messages: list[dict], api_key: str, model : str, reasonin
                 break
             
             # 为什么输出流里会包含上次的输出？
-            if event["reasoning"] and len(event["reasoning"]) > prev_reasoning:
+            if event["reasoning"] and len(event["reasoning"]) >= prev_reasoning:
                 event["reasoning"] = event["reasoning"][prev_reasoning:]
                 prev_reasoning += len(event["reasoning"])
-            if event["output"] and len(event["output"]) > prev_output:
+            if event["output"] and len(event["output"]) >= prev_output:
                 event["output"] = event["output"][prev_output:]
                 prev_output += len(event["output"])
             
