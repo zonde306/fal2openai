@@ -72,8 +72,8 @@ async def send_message(messages: list[dict], api_key: str, model : str, reasonin
     request_id = f"chatcmpl-{uuid.uuid4()}"
     error_message = ""
 
-    logger.info(f"System Prompt: {feat.SYSTEM_PROMPT}")
-    logger.info(f"User Prompt: {prompt}")
+    print(f"System Prompt: {feat.SYSTEM_PROMPT}")
+    print(f"User Prompt: {prompt}")
 
     try:
         handler = client.stream(
@@ -135,6 +135,7 @@ async def send_message(messages: list[dict], api_key: str, model : str, reasonin
         print("")
 
     if error_message:
+        print(f"ERROR: {error_message}")
         yield {
             "id" : request_id,
             "object": "chat.completion.chunk",
