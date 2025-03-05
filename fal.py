@@ -87,21 +87,21 @@ async def send_message(messages: list[dict], api_key: str, model : str, reasonin
         )
 
         is_reasoning = False
-        prev_reasoning = ""
-        prev_output = ""
+        prev_reasoning = 0
+        prev_output = 0
         async for event in handler:
             if event["error"]:
                 error_message = event["error"]
                 break
             
             # 为什么输出流里会包含上次的输出？
-            if event["reasoning"]:
-                event["reasoning"] = event["reasoning"].removeprefix(prev_reasoning)
-                prev_reasoning += event["reasoning"]
-            if event["output"]:
-                event["output"] = event["output"].removeprefix(prev_output)
-                prev_output += event["output"]
-
+            if event["reasoning"] and len(event["reasoning"]) > prev_reasoning:
+                event["reasoning"] = event["reasoning"][prev_reasoning:]
+                prev_reasoning += len(event["reasoning"])
+            if event["output"] and len(event["output"]) > prev_output:
+                event["output"] = event["output"][prev_output:]
+                prev_output += len(event["output"])
+            
             if reasoning and not is_reasoning and event["reasoning"]:
                 is_reasoning = True
                 content = f"<thinking>\n{event['reasoning']}"
