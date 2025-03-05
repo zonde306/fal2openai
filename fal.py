@@ -2,6 +2,8 @@ import time
 import uuid
 from typing import AsyncGenerator
 import logging
+import re
+import collections
 import features
 import defines
 import fal_client
@@ -33,22 +35,13 @@ def next_client() -> fal_client.AsyncClient:
     clients = list(CLIENTS.values())
     return clients[CLIENTS_POLL % len(clients)]
 
-async def process_upload(src : str) -> str:
-    # Unsupported
-    logger.warning(f"Unsupported upload: {src}")
-    return ""
-
-async def format_messages(messages: list[dict], role_info : features.RoleInfo) -> tuple[str, list[str]]:
-    prompt = ""
-    attachments = []
-    for msg in messages:
+async def format_messages(messages: list[dict], role_info : features.RoleInfo) -> tuple[str, str]:
+    processed = collections.defaultdict(str)
+    for i, msg in enumerate(messages):
         contents = []
         if isinstance(msg["content"], list):
             for cont in msg["content"]:
-                if image_url := cont.get("image_url", {}):
-                    if img := image_url.get("url"):
-                        attachments.append(await process_upload(img))
-                elif isinstance(cont, str):
+                if isinstance(cont, str):
                     contents.append(cont)
         else:
             contents.append(msg["content"])
@@ -56,32 +49,56 @@ async def format_messages(messages: list[dict], role_info : features.RoleInfo) -
         for cont in contents:
             if "<|removeRole|>" in cont:
                 cont = cont.replace("<|removeRole|>\n", "").replace("<|removeRole|>", "")
-                prompt += f"{cont}\n\n"
             else:
                 role : str = msg.get("role", "")
                 role = getattr(role_info, role.lower(), role_info.system)
-                prompt += f"\b{role}: {cont}\n\n"
+                cont = f"\b{role}:{cont}"
+            
+            cont = re.sub(r"\n{2,}", r"\n", cont).strip()
+            cont = re.sub(r"(^[ \u3000]+|[ \u3000]+$)", "", cont)
+            processed[i] += cont + "\n"
+        
+        processed[i] = processed[i].strip()
 
-    return prompt, attachments
+    full = False
+    output1, output2 = "", ""
+    first_length = len(processed[0])
+    for prompt in reversed(processed[1:]):
+        if not full:
+            if len(output2) + len(prompt) < defines.PROMPT_CHARS_LIMIT:
+                output2 = prompt + "\n" + output2
+            else:
+                full = True
+        
+        if full:
+            if first_length + len(output1) + len(prompt) < defines.PROMPT_CHARS_LIMIT:
+                output2 = prompt + "\n" + output2
+            else:
+                break
+    
+    output1 = processed[1:] + "\n" + output1
+    return output1.strip(), output2.strip()
 
 async def send_message(messages: list[dict], api_key: str, model : str, reasoning : bool = False) -> AsyncGenerator[dict, None]:
     client = CLIENTS.get(api_key, fal_client.AsyncClient(api_key)) if api_key else next_client()
 
     feat = features.process_features(messages)
-    prompt, _ = await format_messages(messages, feat.ROLE)
+    prompt1, prompt2 = await format_messages(messages, feat.ROLE)
     request_id = f"chatcmpl-{uuid.uuid4()}"
     error_message = ""
 
-    print(f"System Prompt({len(feat.SYSTEM_PROMPT)}): \n{feat.SYSTEM_PROMPT}")
-    print(f"User Prompt({len(prompt)}): \n{prompt}")
+    print(f"System Prompt({len(prompt1)}): \n{prompt1}")
+    print(f"User Prompt({len(prompt2)}): \n{prompt2}")
     print("Response:")
 
     try:
+        assert len(prompt1) < defines.PROMPT_CHARS_LIMIT and len(prompt2) < defines.PROMPT_CHARS_LIMIT, f"Prompt too long: {len(prompt1)} + {len(prompt2)}"
+
         handler = client.stream(
             "fal-ai/any-llm",
             arguments={
-                "prompt" : prompt,
-                "system_prompt": feat.SYSTEM_PROMPT,
+                "system_prompt": prompt1,
+                "prompt" : prompt2,
                 "reasoning": reasoning,
                 "model": model,
             },
@@ -127,12 +144,11 @@ async def send_message(messages: list[dict], api_key: str, model : str, reasonin
                 }],
             }
             print(content, end="")
-    except fal_client.client.FalClientError as e:
+    except (fal_client.client.FalClientError, AssertionError) as e:
         error_message = str(e)
         print("")
         logger.error(f"Error: {e}", exc_info=True)
     except httpx_sse._exceptions.SSEError as e:
-        print(f"*** SSL Error: {e}")
         # 他们库的问题
         print("")
 

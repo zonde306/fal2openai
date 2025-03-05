@@ -15,7 +15,6 @@ class RoleInfo:
 @dataclasses.dataclass
 class Features:
     ROLE : RoleInfo
-    SYSTEM_PROMPT: str = ""
 
 def extract_role_info(content : str) -> tuple[RoleInfo, str]:
     if not isinstance(content, str):
@@ -47,15 +46,5 @@ def process_features(messages : list) -> Features:
             messages[0]["content"] = messages[0]["content"].replace(f"{k}\n", "").replace(k, "")
 
     role, cont = extract_role_info(messages[0]["content"])
-
-    system = ""
-    if matched := SYSTEM_PATTERN.search(cont):
-        system = matched.group(1).strip()
-        messages[0]["content"] = re.sub(SYSTEM_PATTERN, "", cont)
-    elif messages[0]["role"] == "system":
-        system = cont
-        messages.pop(0)
-    else:
-        messages[0]["content"] = cont
-
-    return Features(role, system, **feats)
+    messages[0]["content"] = cont
+    return Features(role, **feats)
