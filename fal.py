@@ -131,10 +131,11 @@ async def send_message(messages: list[dict], api_key: str, model : str, reasonin
         error_message = str(e)
         print("")
         logger.error(f"Error: {e}", exc_info=True)
-    except httpx_sse._exceptions.SSEError:
+    except httpx_sse._exceptions.SSEError as e:
+        print(f"*** SSL Error: {e}")
         # 他们库的问题
         print("")
-    
+
     if error_message:
         print(f"ERROR: {error_message}")
         yield {

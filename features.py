@@ -49,10 +49,6 @@ def process_features(messages : list) -> Features:
     role, cont = extract_role_info(messages[0]["content"])
 
     system = ""
-    if messages[0]["role"] == "system":
-        system = cont
-        messages.pop(0)
-    else:
-        messages[0]["content"] = cont
+    messages[0]["content"] = cont
 
     return Features(role, system, **feats)
