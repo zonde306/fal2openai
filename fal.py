@@ -80,7 +80,7 @@ async def format_messages(messages: list[dict], role_info : features.RoleInfo) -
             else:
                 break
     
-    output1 = processed[1:] + "\n" + output1
+    output1 = first_message + "\n" + output1
     return output1.strip(), output2.strip()
 
 async def send_message(messages: list[dict], api_key: str, model : str, reasoning : bool = False) -> AsyncGenerator[dict, None]:
