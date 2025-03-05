@@ -72,8 +72,8 @@ async def send_message(messages: list[dict], api_key: str, model : str, reasonin
     request_id = f"chatcmpl-{uuid.uuid4()}"
     error_message = ""
 
-    print(f"System Prompt: \n{feat.SYSTEM_PROMPT}")
-    print(f"User Prompt: \n{prompt}")
+    print(f"System Prompt({len(feat.SYSTEM_PROMPT)}): \n{feat.SYSTEM_PROMPT}")
+    print(f"User Prompt({len(prompt)}): \n{prompt}")
     print("Response:")
 
     try:
