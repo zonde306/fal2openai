@@ -14,9 +14,9 @@ class TestApp(unittest.IsolatedAsyncioTestCase):
     
     async def test_models(self):
         response = await self.client.get("/v1/models")
-        data : list[dict] = await response.json()
+        data : dict = await response.json()
         self.assertEqual(response.status, 200)
-        for model in data:
+        for model in data.get("data", []):
             self.assertEqual(model["object"], "model")
             self.assertIn("id", model)
             self.assertIn(model.get("name", ""), defines.MODELS)
